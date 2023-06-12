@@ -1,5 +1,9 @@
+import numpy
+
+# scipy special has sigmoid function expit()
+import scipy.special
+
 # neural network class definition
-import numpy;
 class NeuralNetwork:
 
     # hnodes = hidden nodes
@@ -16,11 +20,14 @@ class NeuralNetwork:
         self.lr = learningRate
 
         #create weights
-        self.weights()
+        self.initWeights()
+
+        #shortcut for sigmoid as activation function
+        self.activation_function = lambda x: scipy.special.expit(x)
         pass
 
     # generate weight marices
-    def weights(self):
+    def initWeights(self):
 
         # O = Output Nodes
         # I = Input Nodes
@@ -37,6 +44,7 @@ class NeuralNetwork:
         #                    c                      cu
         #
         #  w_i_h = 3 x 1
+        # see query()
         self.wih = numpy.random.rand(self.hnodes, self.inodes) - 0.5
 
         # weights for hidden nodes and output nodes
@@ -46,7 +54,14 @@ class NeuralNetwork:
         #  H:  bu     w_h_o:  x y z      O: (H * w_h_o =)  x * au + y * bu + z * cu
         #      cu
         #
+        # see query()
         self.who = numpy.random.rand(self.onodes, self.hnodes) - 0.5
+
+        # alternatively use normal distribution with
+        # 1st argument 0.0 is the mean of the distribution, second argument is the standard deviation
+        # see https://numpy.org/doc/stable/reference/random/generated/numpy.random.normal.html
+        # self.wih = numpy.random.normal(0.0, pow(self.hnodes, -0.5), (self.hnodes, self.inodes))
+        # self.who = numpy.random.normal(0.0, pow(self.onodes, -0.5), (self.hnodes, self.inodes))
 
         pass
 
@@ -56,7 +71,24 @@ class NeuralNetwork:
 
     # query the neural network - get the answer of output nodes for
     # an input
-    def query(self):
+    def query(self, inputs_list):
+
+        # convert inputs to 2d array
+        inputs = numpy.array(inputs_list, ndmin=2).T
+
+        #calculate signals into hidden layer
+        hidden_inputs = numpy.dot(self.wih, inputs)
+
+        #calculate signals emerging from hidden layer
+        hidden_outputs = self.activation_function(hidden_inputs)
+
+        # calculate signals into final output layer
+        final_inputs = numpy.dot(self.who, hidden_outputs)
+
+        # calculate signals emerging from final output layer
+        final_outputs = self.activation_function(final_inputs)
+
+        return final_outputs
         pass
 
     pass
